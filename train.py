@@ -9,6 +9,8 @@ from src.plotting import comparison_table, plot_history
 
 
 def main():
+
+    # 读取输入的参数
     parser = argparse.ArgumentParser(description="Time Machine 单词级 next-token prediction")
     parser.add_argument("--model", choices=(*MODEL_TYPES, "all"), default="all")
     parser.add_argument("--data-path", help="pg35.txt 路径；也可使用 TIME_MACHINE_DATA_PATH")
@@ -20,12 +22,16 @@ def main():
     for name in ("train_ratio", "valid_ratio", "dropout", "learning_rate", "grad_clip"):
         parser.add_argument("--" + name.replace("_", "-"), type=float, default=getattr(defaults, name))
     args = parser.parse_args()
+
+    # 确认读取的参数
     config = ExperimentConfig(**{name: getattr(args, name) for name in vars(defaults)})
     data_path = resolve_data_path(args.data_path)
     output_dir = resolve_output_dir(args.output_dir)
     device = get_device(args.device)
     print(f"文本: {data_path}\n输出: {output_dir}\n设备: {device}")
     selected = MODEL_TYPES if args.model == "all" else (args.model,)
+
+    # 对选择的模型进行操作
     for model_type in selected:
         # 每个模型重新设种子和 DataLoader 的生成器，保证数据顺序一致。
         seed_everything(config.seed)
@@ -37,6 +43,8 @@ def main():
         figure.savefig(result["run_dir"] / "learning_curves.png", dpi=150)
         from matplotlib import pyplot as plt
         plt.close(figure)
+
+    # 如果选了三个模型，自动全部比较
     if args.model == "all":
         table = comparison_table(output_dir)
         table.to_csv(output_dir / "comparison.csv", index=False)
