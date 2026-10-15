@@ -1,0 +1,6 @@
+torch>=2.1
+numpy>=1.22
+pandas>=1.5
+matplotlib>=3.6
+jupyterlab>=3.6
+ipykernel>=6.0
